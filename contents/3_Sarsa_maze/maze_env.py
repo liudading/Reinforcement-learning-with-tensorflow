@@ -30,8 +30,8 @@ MAZE_W = 4  # grid width
 class Maze(tk.Tk, object):
     def __init__(self):
         super(Maze, self).__init__()
-        self.action_space = ['u', 'd', 'l', 'r']
-        self.n_actions = len(self.action_space)
+        self.action_space = ['u', 'd', 'l', 'r'] ## 4 actions: up, down, left, right. type list
+        self.n_actions = len(self.action_space) ## one D
         self.title('maze')
         self.geometry('{0}x{1}'.format(MAZE_H * UNIT, MAZE_H * UNIT))
         self._build_maze()
@@ -39,14 +39,14 @@ class Maze(tk.Tk, object):
     def _build_maze(self):
         self.canvas = tk.Canvas(self, bg='white',
                            height=MAZE_H * UNIT,
-                           width=MAZE_W * UNIT)
+                           width=MAZE_W * UNIT) ## creat the blank table
 
         # create grids
         for c in range(0, MAZE_W * UNIT, UNIT):
-            x0, y0, x1, y1 = c, 0, c, MAZE_H * UNIT
+            x0, y0, x1, y1 = c, 0, c, MAZE_H * UNIT ## Height, Horizontal line
             self.canvas.create_line(x0, y0, x1, y1)
         for r in range(0, MAZE_H * UNIT, UNIT):
-            x0, y0, x1, y1 = 0, r, MAZE_W * UNIT, r
+            x0, y0, x1, y1 = 0, r, MAZE_W * UNIT, r ## Width, Vertical line
             self.canvas.create_line(x0, y0, x1, y1)
 
         # create origin
@@ -70,32 +70,33 @@ class Maze(tk.Tk, object):
         self.oval = self.canvas.create_oval(
             oval_center[0] - 15, oval_center[1] - 15,
             oval_center[0] + 15, oval_center[1] + 15,
-            fill='yellow')
+            fill='yellow') ## target place
 
         # create red rect
         self.rect = self.canvas.create_rectangle(
             origin[0] - 15, origin[1] - 15,
             origin[0] + 15, origin[1] + 15,
-            fill='red')
+            fill='red') ## start place
 
         # pack all
         self.canvas.pack()
 
-    def reset(self):
+    def reset(self): ## start at the same place
         self.update()
         time.sleep(0.5)
-        self.canvas.delete(self.rect)
+        self.canvas.delete(self.rect) ## delate the current rectangle  
         origin = np.array([20, 20])
         self.rect = self.canvas.create_rectangle(
             origin[0] - 15, origin[1] - 15,
             origin[0] + 15, origin[1] + 15,
-            fill='red')
+            fill='red') ## and initial the rectangle place to the start point
         # return observation
-        return self.canvas.coords(self.rect)
+        return self.canvas.coords(self.rect) ## move the rectangle from current place to start point
 
     def step(self, action):
-        s = self.canvas.coords(self.rect)
-        base_action = np.array([0, 0])
+        s = self.canvas.coords(self.rect) ## current rectangle place
+        base_action = np.array([0, 0]) ## base action is the 
+        ## change baes action according to the action and state that satisfies the condition
         if action == 0:   # up
             if s[1] > UNIT:
                 base_action[1] -= UNIT
@@ -111,14 +112,14 @@ class Maze(tk.Tk, object):
 
         self.canvas.move(self.rect, base_action[0], base_action[1])  # move agent
 
-        s_ = self.canvas.coords(self.rect)  # next state
+        s_ = self.canvas.coords(self.rect)  ## after moves the rectangle, the next state can be obtained
 
         # reward function
-        if s_ == self.canvas.coords(self.oval):
+        if s_ == self.canvas.coords(self.oval): ## the rectangle is at the target place
             reward = 1
             done = True
             s_ = 'terminal'
-        elif s_ in [self.canvas.coords(self.hell1), self.canvas.coords(self.hell2)]:
+        elif s_ in [self.canvas.coords(self.hell1), self.canvas.coords(self.hell2)]: ## the rectangle is at the two wrong places 
             reward = -1
             done = True
             s_ = 'terminal'
